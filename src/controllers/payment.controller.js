@@ -10,7 +10,6 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 
-
 export const createOrder = async (req, res) => {
   const order = {
     intent: "CAPTURE",
@@ -47,38 +46,47 @@ export const createOrder = async (req, res) => {
       Authorization: `Bearer ${access_token}`,
     },
   });
-  
+
   return res.send(response.data);
 };
 
 export const captureOrder = async (req, res) => {
-    const {token} = req.query;
-    const response = await axios.post(`${PAYPAL_API}/v2/checkout/orders/${token}/capture`,{},{
-        auth:{
-            username: PAYPAL_API_CLIENT,
-            password: PAYPAL_API_SECRET,
-        }
-    })
-   
-    return res.redirect('/payed')
-    
-}
+  const { token } = req.query;
+  const response = await axios.post(
+    `${PAYPAL_API}/v2/checkout/orders/${token}/capture`,
+    {},
+    {
+      auth: {
+        username: PAYPAL_API_CLIENT,
+        password: PAYPAL_API_SECRET,
+      },
+    }
+  );
 
+  const filePath = path.resolve("src/public/payed.html");
+  fs.readFile(filePath, "utf8", (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error interno del servidor");
+    } else {
+      res.send(data);
+    }
+  });
+};
 
 export const cancelPayment = (req, res) => {
-    res.redirect("/");
-}
+  res.redirect("/");
+};
 
-
-export const payedOrder = (req, res) => {
-    const filePath =  (path.resolve('src/public/payed.html'))
-    console.log(filePath)
-    fs.readFile(filePath, 'utf8', (err, data) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send('Error interno del servidor');
-      } else {
-        res.send(data);
-      }
-    });
-  };
+// export const payedOrder = (req, res) => {
+//   const filePath = path.resolve("src/public/payed.html");
+//   console.log(filePath);
+//   fs.readFile(filePath, "utf8", (err, data) => {
+//     if (err) {
+//       console.error(err);
+//       res.status(500).send("Error interno del servidor");
+//     } else {
+//       res.send(data);
+//     }
+//   });
+// };
